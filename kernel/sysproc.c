@@ -7,6 +7,31 @@
 #include "proc.h"
 
 uint64
+sys_pgaccess(void)
+{
+  uint64 va;
+  int n;
+  uint64 user_mask;
+
+  argaddr(0, &va);
+  argint(1, &n);
+  argaddr(2, &user_mask);
+  uint32 mask = 0;
+
+  for (int i = 0; i < n; i++) {
+    uint64 addr = va + i * PGSIZE;
+    pte_t *pte = walk(myproc()->pagetable, addr, 0);
+    if (pte && (*pte & PTE_V) && (*pte & PTE_A)) {
+      mask |= (1 << i);
+      *pte &= ~PTE_A;
+    }
+  }
+  if (copyout(myproc()->pagetable, user_mask, (char*)&mask, sizeof(mask)) < 0)
+    return -1;
+  return 0;
+}
+
+uint64
 sys_exit(void)
 {
   int n;
@@ -68,16 +93,6 @@ sys_sleep(void)
   release(&tickslock);
   return 0;
 }
-
-
-#ifdef LAB_PGTBL
-int
-sys_pgaccess(void)
-{
-  // lab pgtbl: your code here.
-  return 0;
-}
-#endif
 
 uint64
 sys_kill(void)
