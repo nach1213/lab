@@ -1,0 +1,6 @@
+1. a0-a7
+2. both functions were inlined
+3. 0x642
+4. 0x38
+5. He110 World
+6. x=3 y=<undefined>
